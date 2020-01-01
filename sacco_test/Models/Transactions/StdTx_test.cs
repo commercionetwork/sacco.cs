@@ -36,10 +36,11 @@ namespace sacco_test
             origTx = new StdTx(messages: tMessages, signatures: tSignatures, fee: tFee, memo: "StdMemoValue");
             origJson = origTx.toJson();
 
+            // Here just for debugging
+            outString = origTx.ToString();
+
             // USeless - the test just create the object...
             Assert.AreEqual(origTx, origTx);
-
-            outString = origTx.ToString();
 
         }
     }

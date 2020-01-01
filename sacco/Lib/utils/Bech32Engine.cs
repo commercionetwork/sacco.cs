@@ -6,7 +6,7 @@
 // BlockIt s.r.l.
 //
 /// !!! This module is quite different from the Dart version - We include a Bech32 Engine from GitHub (Bech32Engine.cs)
-/// !!! tHe class name has been modified to Bech32Encoder in order mantain the name of the Dart class
+/// !!! tHe class name has been modified to Bech32Encoder in order not to overwrite the name of the Dart class
 //
 // Bech32 Engine Encoding/Decoding - Courtesy from GitHub by Guillaume Bonnot - Thanks, Guillaume!
 // This module is included as is, with minor modification marked in place

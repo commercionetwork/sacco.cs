@@ -19,17 +19,23 @@ using System.Text;
 using System.Diagnostics;
 using System.IO;
 using NBitcoin;
-using Newtonsoft.Json;
+using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.X9;
 using Org.BouncyCastle.Math.EC;
+using Org.BouncyCastle.Crypto.Prng;
 using Org.BouncyCastle.Crypto.Digests;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Math;
+using Org.BouncyCastle.Security;
+using Org.BouncyCastle.Crypto.Signers;
+
+
 
 
 namespace sacco.Lib
 {
     // *** This is inherited by Equatable in Dart Package!
+    //  There is no such Class in C# - we include Compare-Net-Objects Nuget package for the purpose - see https://github.com/GregFinzer/Compare-Net-Objects
     public class Wallet
     {
         #region Instance Variables
@@ -63,7 +69,7 @@ namespace sacco.Lib
 
 
         /// Returns the associated [privateKey] as an [ECPrivateKey] instance - in C# we use instead ECPrivateKeyParameters
-        public ECPrivateKeyParameters ecPrivateKey
+        private ECPrivateKeyParameters ecPrivateKey
         {
             get
             {
@@ -199,27 +205,60 @@ namespace sacco.Lib
             return new Wallet(networkInfo: networkInfo, address: wallet.address, privateKey: wallet.privateKey, publicKey: wallet.publicKey );
         }
 
+
+        /// Generates a SecureRandom
+        /// C#h as not a fortuna random generator, Just trying an aproach with DigestRandomGenerator from BouncyCastle
+        private static SecureRandom _getSecureRandom()
+        {
+            // Start from a crypto seed from C# libraries
+            System.Security.Cryptography.RNGCryptoServiceProvider rngCsp = new System.Security.Cryptography.RNGCryptoServiceProvider();
+            byte[] randomBytes = new byte[32];
+            rngCsp.GetBytes(randomBytes);
+            // Get a frist random generator from BouncyCastle
+            VmpcRandomGenerator firstRandomGenerator = new Org.BouncyCastle.Crypto.Prng.VmpcRandomGenerator();
+            firstRandomGenerator.AddSeedMaterial(randomBytes);
+            byte[] seed = new byte[32];
+            firstRandomGenerator.NextBytes(seed, 0, 32);
+            // Create and seed the final Randon Generator
+            DigestRandomGenerator wkRandomGenerator = new Org.BouncyCastle.Crypto.Prng.DigestRandomGenerator(new Sha512Digest());
+            SecureRandom secureRandomGenerator = new SecureRandom(wkRandomGenerator);
+            secureRandomGenerator.SetSeed(seed);
+            return secureRandomGenerator;
+        }
+
+
         #endregion
 
         #region Public Methods
 
-        /// Signs the given [data] using the associated [privateKey].
-        public byte[] signData(Dictionary<String, Object> data)
+        /// Signs the given [data] using the associated [privateKey] and encodes
+        /// the signature bytes to be included inside a transaction.
+        public byte[] signTxData(byte[] data)
         {
-            // Encode the sorted JSON to a string
-            String jsonData = JsonConvert.SerializeObject(data);
-
-            // Create a Sha256 of the message
-            byte[] utf8Bytes = Encoding.UTF8.GetBytes(jsonData);
-
             Sha256Digest sha256digest = new Sha256Digest();
-            sha256digest.BlockUpdate(utf8Bytes, 0, utf8Bytes.Length);
+            sha256digest.BlockUpdate(data, 0, data.Length);
             // byte[] hash = new byte[SHA256DIGEST_OUT_LENGTH];
             byte[] hash = new byte[sha256digest.GetDigestSize()];
             sha256digest.DoFinal(hash, 0);
 
             // Compute the signature
             return TransactionSigner.deriveFrom(hash, ecPrivateKey, ecPublicKey);
+        }
+
+        /// Signs the given [data] using the private key associated with this wallet,
+        /// returning the signature bytes ASN.1 DER encoded.
+        public byte[] sign(byte[] data)
+        {
+            ECDsaSigner ecdsaSigner = new ECDsaSigner();
+            ecdsaSigner.Init(true, new ParametersWithRandom(ecPrivateKey, _getSecureRandom()));
+            ECSignature ecSignature = new ECSignature(ecdsaSigner.GenerateSignature(data));
+            // Create the Asn1 DER sequence for the signature
+            // Quite different from Dart approach
+            Asn1EncodableVector asn1Vect = new Asn1EncodableVector();
+            asn1Vect.Add(new DerInteger(ecSignature.r));
+            asn1Vect.Add(new DerInteger(ecSignature.s));
+            DerSequence sequence = new DerSequence(asn1Vect);
+            return sequence.GetEncoded();
         }
 
         /// Converts the current [Wallet] instance into a JSON object.
@@ -242,131 +281,5 @@ namespace sacco.Lib
 
     #endregion
 
-    /*
-     class Wallet extends Equatable {
-      static const DERIVATION_PATH = "m/44'/118'/0'/0/0";
-
-      final Uint8List address;
-      final Uint8List privateKey;
-      final Uint8List publicKey;
-
-      final NetworkInfo networkInfo;
-
-      Wallet({
-        @required this.networkInfo,
-        @required this.address,
-        @required this.privateKey,
-        @required this.publicKey,
-      })  : assert(networkInfo != null),
-            assert(privateKey != null),
-            assert(publicKey != null),
-            super([networkInfo, address, privateKey, publicKey]);
-
-      /// Derives the private key from the given [mnemonic] using the specified
-      /// [networkInfo].
-      factory Wallet.derive(
-        List<String> mnemonic,
-        NetworkInfo networkInfo,
-      ) {
-        // Get the mnemonic as a string
-        final mnemonicString = mnemonic.join(' ');
-        if (!bip39.validateMnemonic(mnemonicString)) {
-          throw Exception("Invalid mnemonic " + mnemonicString);
-        }
-
-        // Convert the mnemonic to a BIP32 instance
-        final seed = bip39.mnemonicToSeed(mnemonicString);
-        final root = bip32.BIP32.fromSeed(seed);
-
-        // Get the node from the derivation path
-        final derivedNode = root.derivePath(DERIVATION_PATH);
-
-        // Get the curve data
-        final secp256k1 = ECCurve_secp256k1();
-        final point = secp256k1.G;
-
-        // Compute the curve point associated to the private key
-        final bigInt = BigInt.parse(HEX.encode(derivedNode.privateKey), radix: 16);
-        final curvePoint = point * bigInt;
-
-        // Get the public key
-        final publicKeyBytes = curvePoint.getEncoded();
-
-        // Get the address
-        final sha256Digest = SHA256Digest().process(publicKeyBytes);
-        final address = RIPEMD160Digest().process(sha256Digest);
-
-        // Return the key bytes
-        return Wallet(
-          address: address,
-          publicKey: publicKeyBytes,
-          privateKey: derivedNode.privateKey,
-          networkInfo: networkInfo,
-        );
-      }
-
-      /// Creates a new [Wallet] instance based on the existent [wallet] for
-      /// the given [networkInfo].
-      factory Wallet.convert(Wallet wallet, NetworkInfo networkInfo) {
-        return Wallet(
-          networkInfo: networkInfo,
-          address: wallet.address,
-          privateKey: wallet.privateKey,
-          publicKey: wallet.publicKey,
-        );
-      }
-
-      /// Returns the associated [address] as a Bech32 string.
-      String get bech32Address =>
-          Bech32Encoder.encode(networkInfo.bech32Hrp, address);
-
-      /// Returns the associated [privateKey] as an [ECPrivateKey] instance.
-      ECPrivateKey get ecPrivateKey {
-        final privateKeyInt = BigInt.parse(HEX.encode(privateKey), radix: 16);
-        return ECPrivateKey(privateKeyInt, ECCurve_secp256k1());
-      }
-
-      /// Returns the associated [publicKey] as an [ECPublicKey] instance.
-      ECPublicKey get ecPublicKey {
-        final secp256k1 = ECCurve_secp256k1();
-        final point = secp256k1.G;
-        final curvePoint = point * ecPrivateKey.d;
-        return ECPublicKey(curvePoint, ECCurve_secp256k1());
-      }
-
-      /// Signs the given [data] using the associated [privateKey].
-      Uint8List signData(Map<String, dynamic> data) {
-        // Encode the sorted JSON to a string
-        var jsonData = json.encode(data);
-
-        // Create a Sha256 of the message
-        final bytes = utf8.encode(jsonData);
-        final hash = SHA256Digest().process(bytes);
-
-        // Compute the signature
-        return TransactionSigner.deriveFrom(hash, ecPrivateKey, ecPublicKey);
-      }
-
-      /// Creates a new [Wallet] instance from the given [json] and [privateKey].
-      factory Wallet.fromJson(Map<String, dynamic> json, Uint8List privateKey) {
-        return Wallet(
-          address: HEX.decode(json["hex_address"] as String),
-          publicKey: HEX.decode(json['public_key'] as String),
-          privateKey: privateKey,
-          networkInfo: NetworkInfo.fromJson(json['network_info']),
-        );
-      }
-
-      /// Converts the current [Wallet] instance into a JSON object.
-      /// Note that the private key is not serialized for safety reasons.
-      Map<String, dynamic> toJson() => <String, dynamic>{
-            'hex_address': HEX.encode(this.address),
-            'bech32_address': this.bech32Address,
-            'public_key': HEX.encode(this.publicKey),
-            'network_info': this.networkInfo.toJson(),
-          };
     }
-
-    */
-}
 }

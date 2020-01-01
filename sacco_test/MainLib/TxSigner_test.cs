@@ -62,7 +62,7 @@ namespace sacco_test
             AccountDataRetrieval.client = client;
             NodeInfoRetrieval.client = client;
 
-            // Call wthout await to avoid marking test class as async
+            // Call without await to avoid marking test class as async
             StdTx signedTx = TxSigner.signStdTx(wallet: wallet, stdTx: tx).Result;
             Assert.AreEqual(signedTx.signatures.Count, 1);
 

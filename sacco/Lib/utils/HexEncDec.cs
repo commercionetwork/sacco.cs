@@ -13,7 +13,7 @@ using System.Text;
 
 namespace sacco.Lib
 {
-    class HexEncDec
+    public class HexEncDec
     {
         public static String ByteArrayToString(byte[] ba)
         {

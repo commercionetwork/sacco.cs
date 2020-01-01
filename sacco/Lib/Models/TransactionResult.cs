@@ -16,6 +16,7 @@ using Newtonsoft.Json;
 namespace sacco.Lib
 {
     // *** This is inherited by Equatable in Dart Package!
+    //  There is no such Class in C# - we include Compare-Net-Objects Nuget package for the purpose - see https://github.com/GregFinzer/Compare-Net-Objects
     public class TransactionResult
     {
         #region Properties
@@ -40,15 +41,47 @@ namespace sacco.Lib
         public TransactionResult(String hash, bool success, TransactionError error)
         {
             Trace.Assert(hash != null);
-            Trace.Assert((success == true)|| (error != null));
+            Trace.Assert((success == true) || (error != null));
             this.hash = hash;
             this.success = success;
             this.error = error;
         }
 
+        // Static constructor for returning a TransactionResult from json
+        public static TransactionResult fromJson(Dictionary<String, Object> json)
+        {
+            Object outValue;
+            String wkHash = null;
+            bool wkSuccess = false;
+            TransactionError wkError;
+ 
+            if (json.TryGetValue("hash", out outValue))
+                wkHash = outValue as String;
+            if (json.TryGetValue("success", out outValue))
+                wkSuccess = (bool) outValue;
+            if (json.TryGetValue("error", out outValue))
+                wkError = TransactionError.fromJson(outValue as Dictionary<String, Object>);
+            else
+                wkError = null;
+            return new TransactionResult(wkHash, wkSuccess, wkError);
+        }
+
         #endregion
 
         #region Public Methods
+
+        public Dictionary<String, Object> toJson()
+        {
+            Dictionary<String, Object> wkDict = new Dictionary<String, Object>();
+
+            wkDict.Add("hash", this.hash);
+            wkDict.Add("success", this.success);
+            if (this.error != null)
+            {
+                wkDict.Add("error", this.error.toJson());
+            }
+            return (wkDict);
+        }
 
         #endregion
 
@@ -59,6 +92,7 @@ namespace sacco.Lib
     }
 
     // *** This is inherited by Equatable in Dart Package!
+    //  There is no such Class in C# - we include Compare-Net-Objects Nuget package for the purpose - see https://github.com/GregFinzer/Compare-Net-Objects
     public class TransactionError
     {
         #region Properties
@@ -75,9 +109,34 @@ namespace sacco.Lib
             this.errorMessage = errorMessage;
         }
 
+        // Static constructor for returning a TransactionResult from json
+        public static TransactionError fromJson(Dictionary<String, Object> json)
+        {
+            Object outValue;
+            int wkErrorCode = 0;
+            String wkErrorMessage = null;
+
+            if (json.TryGetValue("errorCode", out outValue))
+                wkErrorCode = (int) outValue;
+            if (json.TryGetValue("errorMessage", out outValue))
+                wkErrorMessage = outValue as String;
+            return new TransactionError(wkErrorCode, wkErrorMessage);
+        }
+
+
+
         #endregion
 
         #region Public Methods
+
+        public Dictionary<String, Object> toJson()
+        {
+            Dictionary<String, Object> wkDict = new Dictionary<String, Object>();
+
+            wkDict.Add("errorCode", this.errorCode);
+            wkDict.Add("errorMessage", this.errorMessage);
+            return (wkDict);
+        }
 
         #endregion
 
@@ -86,43 +145,5 @@ namespace sacco.Lib
         #endregion
 
     }
-    /*
-     * class TransactionResult extends Equatable {
-      /// String representing the hash of the transaction.
-      /// Note that this hash is always present, even if the transaction was
-      /// not sent successfully.
-      final String hash;
-
-      /// Tells if the transaction was sent successfully or not.
-      final bool success;
-
-      /// Tells which error has verified if the sending was not successful.
-      /// Please note that this field is going to be:
-      /// - `null` if [success] is `true`.
-      /// - a valid [TransactionError] if [success] is `false`
-      final TransactionError error;
-
-      TransactionResult({
-        @required this.hash,
-        @required this.success,
-        this.error,
-      })  : assert(hash != null),
-            assert(success || error != null),
-            super([hash, success, error]);
-    }
-
-    /// Contains the data related to an error that has occurred when
-    /// broadcasting the transaction.
-    class TransactionError extends Equatable {
-      final int errorCode;
-      final String errorMessage;
-
-      TransactionError({
-        @required this.errorCode,
-        @required this.errorMessage,
-      }) : super([errorCode, errorMessage]);
-    }
-
-    */
 
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
+using KellermanSoftware.CompareNetObjects;
 using System.Text;
 using sacco.Lib;
 
@@ -19,6 +20,7 @@ namespace sacco_test
             List<StdCoin> coinList, recoveredList;
             Dictionary<String, Object> origJson;
 
+
             coin1 = new StdCoin(denom: "PizzaDiFango", amount: "100");
             coin2 = new StdCoin(denom: "LifeUniverse", amount: "42");
             coinList = new List<StdCoin>();
@@ -33,8 +35,6 @@ namespace sacco_test
 
             // Verify if the object is correct
             Assert.AreEqual(coinList, recoveredList);
-            // Cannot use AreEqual on objects  as it test for reference equality - I do not want to override Equals for the class...
-            // Assert.AreEqual(testNetworkInfo, recoveredNetworkInfo);
         }
     }
 }

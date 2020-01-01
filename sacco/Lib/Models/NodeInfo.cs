@@ -16,6 +16,7 @@ using Newtonsoft.Json;
 namespace sacco.Lib
 {
     // *** This is inherited by Equatable in Dart Package!
+    //  There is no such Class in C# - we include Compare-Net-Objects Nuget package for the purpose - see https://github.com/GregFinzer/Compare-Net-Objects
     public class NodeInfo 
     {
         #region Properties
@@ -42,17 +43,5 @@ namespace sacco.Lib
 
         #endregion
 
-
-        /*
-        class NodeInfo extends Equatable {
-         final String network;
-
-         NodeInfo({
-           @required this.network,
-         })  : assert(network != null),
-               super([network]);
-       }
-
-        */
     }
 }

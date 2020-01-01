@@ -1,6 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
+using KellermanSoftware.CompareNetObjects;
 using sacco.Lib;
 
 
@@ -12,20 +13,9 @@ namespace sacco_test
         [TestMethod]
         public void TestJson()
         {
-            /*
-            test('toJson and fromJson work properly with optional fields', () {
-                final networkInfo = NetworkInfo(
-                  bech32Hrp: "bech32",
-                  lcdUrl: "lcd-url",
-                  iconUrl: "icon-url",
-                  name: "name",
-            
-                );
+            //This is the comparison class
+            CompareLogic compareLogic = new CompareLogic();
 
-                final json = networkInfo.toJson();
-                expect(networkInfo, NetworkInfo.fromJson(json));
-            });
-            */
             NetworkInfo testNetworkInfo, recoveredNetworkInfo;
             Dictionary<String, Object> netJson, recJson;
 
@@ -48,8 +38,9 @@ namespace sacco_test
                     Assert.AreEqual(netString, recString);
                 }
             }
-            // Cannot use AreEqual on objects  as it test for reference equality - I do not want to override Equals for the class...
-            // Assert.AreEqual(testNetworkInfo, recoveredNetworkInfo);
+            // Check it - we use compareNet objects here
+            ComparisonResult result = compareLogic.Compare(testNetworkInfo, recoveredNetworkInfo);
+            Assert.AreEqual(result.AreEqual, true);
         }
     }
 }

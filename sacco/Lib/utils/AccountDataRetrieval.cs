@@ -76,13 +76,11 @@ namespace sacco.Lib
             if (jsonResponse.TryGetValue("result", out outValue))
             {
                 json = (outValue as JObject).ToObject<Dictionary<String, Object>>();
-                // json = outValue as Dictionary<String, Object>;
             }
             // Get the "value" data from the result
             if (json.TryGetValue("value", out outValue))
             {
                 value = (outValue as JObject).ToObject<Dictionary<String, Object>>();
-                // value = outValue as Dictionary<String, Object>;
             }
             // get various data from the value
             if (value.TryGetValue("account_number", out outValue))
@@ -106,45 +104,5 @@ namespace sacco.Lib
 
         #endregion
 
-        /*
-         * class AccountDataRetrieval {
-         static var client = http.Client();
-
-         /// Reads the account endpoint and retrieves data from it.
-         static Future<AccountData> getAccountData(Wallet wallet) async {
-           // Build the models.wallet api url
-           final endpoint =
-               "${wallet.networkInfo.lcdUrl}/auth/accounts/${wallet.bech32Address}";
-
-           // Get the server response
-           final response = await client.get(endpoint);
-           if (response.statusCode != 200) {
-             throw Exception(
-               "Expected status code 200 but got ${response.statusCode} - ${response.body}",
-             );
-           }
-
-           // Parse the data
-           var json = jsonDecode(response.body) as Map<String, dynamic>;
-           if (json.containsKey("result")) {
-             json = json["result"];
-           }
-
-           final value = json["value"] as Map<String, dynamic>;
-
-           // Get the coins
-           final coins = ((value["coins"] as List) ?? List())
-               .map((coinMap) => StdCoin.fromJson(coinMap))
-               .toList();
-
-           return AccountData(
-             accountNumber: value["account_number"],
-             sequence: value["sequence"],
-             coins: coins,
-           );
-         }
-       }
-
-        */
     }
 }

@@ -1,9 +1,8 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Resources;
 using System.Text;
+using System.Collections.Generic;
+using KellermanSoftware.CompareNetObjects;
 using sacco.Lib;
 
 
@@ -41,6 +40,8 @@ namespace sacco_test
 
         readonly String singleVector = "final random flame cinnamon grunt hazard easily mutual resist pond solution define knife female tongue crime atom jaguar alert library best forum lesson rigid";
 
+        readonly String singleVector2 = "will hard topic spray beyond ostrich moral morning gas loyal couch horn boss across age post october blur piece wheel film notable word man";
+
         [TestMethod]
         public void TestWallet()
         {
@@ -58,13 +59,38 @@ namespace sacco_test
         [TestMethod]
         public void TestJsonWallet()
         {
+            //This is the comparison class
+            CompareLogic compareLogic = new CompareLogic();
+
             List<String> mnemonic = new List<String>(singleVector.Split(" ", StringSplitOptions.RemoveEmptyEntries));
             Wallet wallet = Wallet.derive(mnemonic, networkInfo);
             Dictionary<String, Object> json = new Dictionary<String, Object>(wallet.toJson());
             byte[] privateKey = wallet.privateKey;
             Wallet retrievedWallet = Wallet.fromJson(json, privateKey);
-            // Check it - It won't work until class are equatable...
-            // Assert.AreEqual(wallet, retrievedWallet);
+            // Check it - we use compareNet objects here
+            ComparisonResult result = compareLogic.Compare(wallet, retrievedWallet);
+            Assert.AreEqual(result.AreEqual, true);
         }
+
+        [TestMethod]
+        public void TestWalletSignaturesNonDeterministic()
+        {
+            //This is the comparison class
+            CompareLogic compareLogic = new CompareLogic();
+
+            List<String> mnemonic = new List<String>(singleVector2.Split(" ", StringSplitOptions.RemoveEmptyEntries));
+            NetworkInfo info = new NetworkInfo(bech32Hrp: "did:com:", lcdUrl: "");
+            Wallet wallet = Wallet.derive(mnemonic, networkInfo);
+            String data = "Quos Iupiter perdere vult, dementat prius";
+
+            String signature1 = HexEncDec.ByteArrayToString(wallet.sign(Encoding.UTF8.GetBytes(data)));
+            String signature2 = HexEncDec.ByteArrayToString(wallet.sign(Encoding.UTF8.GetBytes(data)));
+
+            // Check it - we use compareNet objects here
+            // a String comparison would have been enough...
+            ComparisonResult result = compareLogic.Compare(signature1, signature2);
+            Assert.AreEqual(result.AreEqual, false);
+        }
+
     }
 }

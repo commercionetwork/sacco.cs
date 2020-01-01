@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace sacco.Lib
 {
@@ -42,10 +43,13 @@ namespace sacco.Lib
 
             // Sign each message
             List<StdSignature> signatures = new List<StdSignature>();
-            foreach (StdMsg msg in stdTx.messages)
-            {
-                signatures.Add(_getStdSignature(wallet, account, nodeInfo, msg, stdTx.fee, stdTx.memo));
-            }
+            // This was corrected in Dart version 25/11/2019
+            //foreach (StdMsg msg in stdTx.messages)
+            //{
+            //    signatures.Add(_getStdSignature(wallet, account, nodeInfo, msg, stdTx.fee, stdTx.memo));
+            //}
+            signatures.Add(_getStdSignature(wallet, account, nodeInfo, stdTx.messages, stdTx.fee, stdTx.memo));
+
 
             // Assemble the transaction
             return new StdTx(
@@ -59,23 +63,32 @@ namespace sacco.Lib
 
         #region Helpers
 
-        private static StdSignature _getStdSignature(Wallet wallet, AccountData accountData, NodeInfo nodeInfo, StdMsg message, StdFee fee, String memo)
+        private static StdSignature _getStdSignature(Wallet wallet, AccountData accountData, NodeInfo nodeInfo, List<StdMsg> messages, StdFee fee, String memo)
         {
+            // Arrange the msg in a list of Json
+            List<Dictionary<String, Object>> msgList = new List<Dictionary<String, Object>>();
+            foreach (StdMsg msg in messages)
+                msgList.Add(msg.toJson());
+
             StdSignatureMessage signature = new StdSignatureMessage(
                 chainId: nodeInfo.network,
                 accountNumber: accountData.accountNumber,
                 sequence: accountData.sequence,
                 memo: memo,
                 fee: fee.toJson(),
-                msgs: new List<Dictionary<String, Object>>{ message.toJson() }
+                msgs: msgList
             );
 
             // Convert the signature to a JSON and sort it
             Dictionary<String, Object> jsonSignature = signature.toJson();
             Dictionary<String, Object> sortedJson = MapSorter.sort(jsonSignature);
-
+            // Encode the sorted JSON to a string
+            String jsonData = JsonConvert.SerializeObject(sortedJson);
+             // Create a Sha256 of the message
+            byte[] utf8Bytes = Encoding.UTF8.GetBytes(jsonData);
+           
             // Sign the message
-            byte[] signatureData = wallet.signData(sortedJson);
+            byte[] signatureData = wallet.signTxData(utf8Bytes);
 
             // Get the compressed Base64 public key
             byte[] pubKeyCompressed = wallet.ecPublicKey.Q.GetEncoded(true);
@@ -92,81 +105,5 @@ namespace sacco.Lib
 
         #endregion
     }
-
-    /*
-    class TxSigner {
-      /// Signs the given [stdTx] using the info contained inside the
-      /// given [wallet] and returns a new [StdTx] containing the signatures
-      /// inside it.
-      static Future<StdTx> signStdTx({
-        @required Wallet wallet,
-        @required StdTx stdTx,
-      }) async {
-        // Get the account data and node info from the network
-        final account = await AccountDataRetrieval.getAccountData(wallet);
-        final nodeInfo = await NodeInfoRetrieval.getNodeInfo(wallet);
-
-        // Sign each message
-        final signatures = stdTx.messages
-            .map((msg) => _getStdSignature(
-                  wallet,
-                  account,
-                  nodeInfo,
-                  msg,
-                  stdTx.fee,
-                  stdTx.memo,
-                ))
-            .toList();
-
-        // Assemble the transaction
-        return StdTx(
-          fee: stdTx.fee,
-          memo: stdTx.memo,
-          messages: stdTx.messages,
-          signatures: signatures,
-        );
-      }
-
-      static StdSignature _getStdSignature(
-        Wallet wallet,
-        AccountData accountData,
-        NodeInfo nodeInfo,
-        StdMsg message,
-        StdFee fee,
-        String memo,
-      ) {
-        // Create the signature object
-        final signature = StdSignatureMessage(
-          sequence: accountData.sequence,
-          accountNumber: accountData.accountNumber,
-          chainId: nodeInfo.network,
-          fee: fee.toJson(),
-          memo: memo,
-          msgs: [message.toJson()],
-        );
-
-        // Convert the signature to a JSON and sort it
-        final jsonSignature = signature.toJson();
-        final sortedJson = MapSorter.sort(jsonSignature);
-
-        // Sign the message
-        final signatureData = wallet.signData(sortedJson);
-
-        // Get the compressed Base64 public key
-        final pubKeyCompressed = wallet.ecPublicKey.Q.getEncoded(true);
-
-        // Build the StdSignature
-        return StdSignature(
-          value: base64Encode(signatureData),
-          publicKey: StdPublicKey(
-            type: "tendermint/PubKeySecp256k1",
-            value: base64Encode(pubKeyCompressed),
-          ),
-        );
-      }
-    }
-
-     */
-
 }
  
