@@ -18,7 +18,7 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using Newtonsoft.Json;
 
-namespace sacco.Lib
+namespace commercio.sacco.lib
 {
     public class TxSender
     {

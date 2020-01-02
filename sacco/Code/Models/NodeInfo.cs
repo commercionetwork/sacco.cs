@@ -8,12 +8,9 @@
 //
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Diagnostics;
-using Newtonsoft.Json;
 
-namespace sacco.Lib
+namespace commercio.sacco.lib
 {
     // *** This is inherited by Equatable in Dart Package!
     //  There is no such Class in C# - we include Compare-Net-Objects Nuget package for the purpose - see https://github.com/GregFinzer/Compare-Net-Objects

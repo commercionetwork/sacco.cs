@@ -13,7 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-namespace sacco.Lib
+namespace commercio.sacco.lib
 {
     public class TxBuilder
     {

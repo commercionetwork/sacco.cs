@@ -43,7 +43,7 @@ using System.Diagnostics;
 using System.Linq;
 
 // Namespace is ccommon to the whole Lib
-namespace sacco.Lib
+namespace commercio.sacco.lib
 {
     public static class Bech32Engine
     {

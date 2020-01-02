@@ -15,12 +15,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Diagnostics;
-using Newtonsoft.Json;
 
 
-namespace sacco.Lib
+namespace commercio.sacco.lib
 {
     public class MsgSend : StdMsg
     {

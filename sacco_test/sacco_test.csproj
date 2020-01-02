@@ -4,6 +4,22 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
 
     <IsPackable>false</IsPackable>
+
+    <Version>0.1.0</Version>
+
+    <Authors>Commercio.network, Blocki S.r.l.</Authors>
+
+    <Company>Blockit S.r.l.</Company>
+
+    <Description>Unit test code for sacco project.</Description>
+
+    <Copyright>Copyright (c) 2019 Commercio.network, Blockit S.r.l.</Copyright>
+
+    <PackageProjectUrl>https://github.com/commercionetwork</PackageProjectUrl>
+
+    <RepositoryUrl>https://github.com/commercionetwork/sacco.cs</RepositoryUrl>
+
+    <RepositoryType>GitHub</RepositoryType>
   </PropertyGroup>
 
   <ItemGroup>

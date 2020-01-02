@@ -14,7 +14,7 @@ using System;
 using Org.BouncyCastle.Math;
 
 
-namespace sacco.Lib
+namespace commercio.sacco.lib
 {
     public class ECSignature
     {

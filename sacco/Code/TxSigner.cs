@@ -14,7 +14,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace sacco.Lib
+namespace commercio.sacco.lib
 {
     public class TxSigner
     {

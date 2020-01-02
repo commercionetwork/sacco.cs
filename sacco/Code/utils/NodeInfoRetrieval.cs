@@ -15,9 +15,9 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using Newtonsoft.Json.Linq;
 
-namespace sacco.Lib
+namespace commercio.sacco.lib
 {
-    public class AccountDataRetrieval
+    public class NodeInfoRetrieval
     {
         #region Instance Variables
 
@@ -37,11 +37,11 @@ namespace sacco.Lib
         /// Reads the account endpoint and retrieves data from it.
         /// *** This is ported from Dart Future to C# Task<TResult> 
         /// *** The usage of the class should be mantained - to be checked
-        public static async Task<AccountData> getAccountData(Wallet wallet)  
+        public static async Task<NodeInfo> getNodeInfo(Wallet wallet)
         {
             // Build the models.wallet api url
-            String endpoint = $"{wallet.networkInfo.lcdUrl}/auth/accounts/{wallet.bech32Address}";
-            
+            String endpoint = $"{wallet.networkInfo.lcdUrl}/node_info";
+
             // Get the server response
             HttpResponseMessage response = await client.GetAsync(endpoint);
             if (response.StatusCode != System.Net.HttpStatusCode.OK)
@@ -51,8 +51,9 @@ namespace sacco.Lib
             }
 
             // Parse the data
+            // Parse the data
             String jsonResponse = await response.Content.ReadAsStringAsync();
-            return parseServerReturnedAccount(jsonResponse);
+            return (parseServerNodeInfo(jsonResponse));
         }
 
 
@@ -61,45 +62,30 @@ namespace sacco.Lib
         #region Helpers
 
         // Moved the parsing code in a helper public method, so I can test it without net...
-        public static AccountData parseServerReturnedAccount(String stringResponse)
+        public static NodeInfo parseServerNodeInfo(String stringResponse)
         {
-            AccountData wkAccount;
-            Dictionary<String, Object> jsonResponse, json = null, value = null;
-            List<StdCoin> coins = null;
-            String accountNumber = "", sequence = "";
+            NodeInfo wkNode;
+            Dictionary<String, Object> jsonResponse, json = null;
+            String networkName = "";
             Object outValue;
 
             // Parse the data
             JObject jsonObj = JObject.Parse(stringResponse);
             jsonResponse = jsonObj.ToObject<Dictionary<String, Object>>();
-            // Get the "result" data from the response
-            if (jsonResponse.TryGetValue("result", out outValue))
+            // Get the "node_info" data from the response
+            if (jsonResponse.TryGetValue("node_info", out outValue))
             {
                 json = (outValue as JObject).ToObject<Dictionary<String, Object>>();
             }
-            // Get the "value" data from the result
-            if (json.TryGetValue("value", out outValue))
+            // Get the "network" data from the node_info
+            if (json.TryGetValue("network", out outValue))
             {
-                value = (outValue as JObject).ToObject<Dictionary<String, Object>>();
+                networkName = outValue as String;
             }
-            // get various data from the value
-            if (value.TryGetValue("account_number", out outValue))
-            {
-                accountNumber = outValue as String;
-            }
-            if (value.TryGetValue("sequence", out outValue))
-            {
-                sequence = outValue as String;
-            }
-            // Get the coins - Careful, this is a List! so it's decoded as a JArray
-            if (value.TryGetValue("coins", out outValue))
-            {
-                coins = (outValue as JArray).ToObject<List<StdCoin>>();
-            }
-            // Create the account
-            wkAccount = new AccountData(accountNumber: accountNumber, sequence: sequence, coins: coins);
+            // Create the NodeInfo
+            wkNode = new NodeInfo(network: networkName);
 
-            return (wkAccount);
+            return (wkNode);
         }
 
         #endregion

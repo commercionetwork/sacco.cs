@@ -11,7 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace sacco.Lib
+namespace commercio.sacco.lib
 {
     public class AccountData
     {

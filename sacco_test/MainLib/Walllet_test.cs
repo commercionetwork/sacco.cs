@@ -3,7 +3,7 @@ using System;
 using System.Text;
 using System.Collections.Generic;
 using KellermanSoftware.CompareNetObjects;
-using sacco.Lib;
+using commercio.sacco.lib;
 
 
 namespace sacco_test

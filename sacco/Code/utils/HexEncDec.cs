@@ -8,10 +8,8 @@
 /// Hex Encoder - Decoder
 //
 using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace sacco.Lib
+namespace commercio.sacco.lib
 {
     public class HexEncDec
     {

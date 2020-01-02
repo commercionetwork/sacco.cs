@@ -8,30 +8,28 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Diagnostics;
-using Newtonsoft.Json;
 
 
-namespace sacco.Lib
+namespace commercio.sacco.lib
 {
-    public class StdSignature
+    public class StdPublicKey
     {
         #region Properties
 
-        public StdPublicKey publicKey { get; }
+        public String type { get; }
         public String value { get; }
 
         #endregion
 
         #region Constructors
 
-        public StdSignature(String value, StdPublicKey publicKey)
+        public StdPublicKey(String type, String value)
         {
             Trace.Assert(value != null);
-            Trace.Assert(publicKey != null);
+            Trace.Assert(type != null);
+            this.type = type;
             this.value = value;
-            this.publicKey = publicKey;
         }
 
         #endregion
@@ -45,8 +43,8 @@ namespace sacco.Lib
             Dictionary<String, Object> output;
 
             output = new Dictionary<String, Object>();
-            output.Add("pub_key", this.publicKey);
-            output.Add("signature", this.value);
+            output.Add("type", this.type);
+            output.Add("value", this.value);
             return (output);
         }
 
