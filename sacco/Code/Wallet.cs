@@ -26,8 +26,7 @@ using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Security;
 using Org.BouncyCastle.Crypto.Signers;
-
-
+using Newtonsoft.Json;
 
 
 namespace commercio.sacco.lib
@@ -102,6 +101,8 @@ namespace commercio.sacco.lib
 
         #region Constructors
 
+        // I need to mark this constructor in order to avoid confusion in deserialization
+        [JsonConstructor]
         public Wallet(NetworkInfo networkInfo, byte[] address, byte[] privateKey, byte[] publicKey)
         {
             Trace.Assert(networkInfo != null);
@@ -113,32 +114,29 @@ namespace commercio.sacco.lib
             this.publicKey = publicKey;
         }
 
+        /// Creates a new [Wallet] instance from the given [json] and [privateKey].
+        // Static constructor for returning a TransactionResult from json
+        // I abandoned static constructor from json - I am not sure this is the best way to do it, I'd prefer a standard constructor from a dictionary - athough, this was near to Dart approach
+        // Std cosntructor from a dictionary - should work!!!
+        public Wallet (Dictionary<String, Object> json, byte[] privateKey)
+        {
+            //byte[] wkAddress = null, wkPublicKey = null;
+            //NetworkInfo wkNetworkInfo = null;
+            Object outValue;
+
+            if (json.TryGetValue("hex_address", out outValue))
+                this.address = HexEncDec.StringToByteArray(outValue as String);
+            if (json.TryGetValue("public_key", out outValue))
+                this.publicKey = HexEncDec.StringToByteArray(outValue as String);
+            if (json.TryGetValue("network_info", out outValue))
+                this.networkInfo = new NetworkInfo(outValue as Dictionary<String, Object>);
+            this.privateKey = privateKey;
+        }
+
         #endregion
 
         #region static altContructors
         // This are implented as static constructors to translate Dart factory
-
-        /// Creates a new [Wallet] instance from the given [json] and [privateKey].
-        public static Wallet fromJson(Dictionary<String, Object> json, byte[] privateKey)
-        {
-            byte[] wkAddress = null, wkPublicKey = null;
-            NetworkInfo wkNetworkInfo = null;
-            Object outValue;
-
-            if (json.TryGetValue("hex_address", out outValue))
-                wkAddress = HexEncDec.StringToByteArray(outValue as String);
-            if (json.TryGetValue("public_key", out outValue))
-                wkPublicKey = HexEncDec.StringToByteArray(outValue as String);
-            if (json.TryGetValue("network_info", out outValue))
-                wkNetworkInfo = NetworkInfo.fromJson(outValue as Dictionary<String, Object>);
-            return new Wallet(
-              address: wkAddress,
-              publicKey: wkPublicKey,
-              privateKey: privateKey,
-              networkInfo: wkNetworkInfo
-            );
-        }
-
 
         /// Derives the private key from the given [mnemonic] using the specified
         /// [networkInfo].
@@ -205,7 +203,7 @@ namespace commercio.sacco.lib
 
 
         /// Generates a SecureRandom
-        /// C#h as not a fortuna random generator, Just trying an aproach with DigestRandomGenerator from BouncyCastle
+        /// C# has not a fortuna random generator, Just trying an approach with DigestRandomGenerator from BouncyCastle
         private static SecureRandom _getSecureRandom()
         {
             // Start from a crypto seed from C# libraries
@@ -231,7 +229,8 @@ namespace commercio.sacco.lib
 
         /// Signs the given [data] using the associated [privateKey] and encodes
         /// the signature bytes to be included inside a transaction.
-        public byte[] signTxData(byte[] data)
+        /// *** Seems needed only by TxSigner, we keep it limited to this assembly 
+        internal byte[] signTxData(byte[] data)
         {
             Sha256Digest sha256digest = new Sha256Digest();
             sha256digest.BlockUpdate(data, 0, data.Length);

@@ -10,6 +10,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Newtonsoft.Json;
+
 
 
 namespace commercio.sacco.lib
@@ -25,6 +27,8 @@ namespace commercio.sacco.lib
 
         #region Constructors
 
+        // I need to mark this constructor in order to avoid confusion in deserialization
+        [JsonConstructor]
         public StdCoin(String denom, String amount)
         {
             Trace.Assert(denom != null);
@@ -33,19 +37,18 @@ namespace commercio.sacco.lib
             this.amount = amount;
         }
 
-        #endregion
-
-        #region Public Methods
-          
-        public StdCoin fromJson(Dictionary<String, Object> json)
+        public StdCoin (Dictionary<String, Object> json)
         {
             Object outValue;
             if (json.TryGetValue("denom", out outValue))
                 this.denom = outValue as String;
             if (json.TryGetValue("amount", out outValue))
                 this.amount = outValue as String;
-            return this;
         }
+
+        #endregion
+
+        #region Public Methods
 
 
         public Dictionary<String, Object> toJson()
