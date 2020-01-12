@@ -10,6 +10,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Newtonsoft.Json;
+
 
 namespace commercio.sacco.lib
 {
@@ -36,6 +38,8 @@ namespace commercio.sacco.lib
 
         #region Constructors
 
+        // I need to mark this constructor in order to avoid confusion in deserialization
+        [JsonConstructor]
         public TransactionResult(String hash, bool success, TransactionError error)
         {
             Trace.Assert(hash != null);
@@ -46,22 +50,24 @@ namespace commercio.sacco.lib
         }
 
         // Static constructor for returning a TransactionResult from json
-        public static TransactionResult fromJson(Dictionary<String, Object> json)
+        // I abandoned static constructor from json - I am not sure this is the best way to do it, I'd prefer a standard constructor from a dictionary - athough, this was near to Dart approach
+        // Std cosntructor from a dictionary - should work!!!
+        public TransactionResult (Dictionary<String, Object> json)
         {
             Object outValue;
-            String wkHash = null;
-            bool wkSuccess = false;
-            TransactionError wkError;
+            //String wkHash = null;
+            //bool wkSuccess = false;
+            //TransactionError wkError;
  
             if (json.TryGetValue("hash", out outValue))
-                wkHash = outValue as String;
+                this.hash = outValue as String;
             if (json.TryGetValue("success", out outValue))
-                wkSuccess = (bool) outValue;
+                this.success = (bool) outValue;
             if (json.TryGetValue("error", out outValue))
-                wkError = TransactionError.fromJson(outValue as Dictionary<String, Object>);
+                this.error = new TransactionError(outValue as Dictionary<String, Object>);
             else
-                wkError = null;
-            return new TransactionResult(wkHash, wkSuccess, wkError);
+                this.error = null;
+            // return new TransactionResult(wkHash, wkSuccess, wkError);
         }
 
         #endregion
@@ -101,6 +107,8 @@ namespace commercio.sacco.lib
 
         #region Constructors
 
+        // I need to mark this constructor in order to avoid confusion in deserialization
+        [JsonConstructor]
         public TransactionError(int errorCode, String errorMessage)
         {
             this.errorCode = errorCode;
@@ -108,17 +116,19 @@ namespace commercio.sacco.lib
         }
 
         // Static constructor for returning a TransactionResult from json
-        public static TransactionError fromJson(Dictionary<String, Object> json)
+        // I abandoned static constructor from json - I am not sure this is the best way to do it, I'd prefer a standard constructor from a dictionary - athough, this was near to Dart approach
+        // Std cosntructor from a dictionary - should work!!!
+        public TransactionError (Dictionary<String, Object> json)
         {
             Object outValue;
-            int wkErrorCode = 0;
-            String wkErrorMessage = null;
+            //int wkErrorCode = 0;
+            //String wkErrorMessage = null;
 
             if (json.TryGetValue("errorCode", out outValue))
-                wkErrorCode = (int) outValue;
+                this.errorCode = (int) outValue;
             if (json.TryGetValue("errorMessage", out outValue))
-                wkErrorMessage = outValue as String;
-            return new TransactionError(wkErrorCode, wkErrorMessage);
+                this.errorMessage = outValue as String;
+            // return new TransactionError(wkErrorCode, wkErrorMessage);
         }
 
 

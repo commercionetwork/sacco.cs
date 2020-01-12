@@ -22,7 +22,7 @@ namespace sacco_test
             testNetworkInfo = new NetworkInfo("test_bech32", "test_lcdUrl", "test_name", "test_iconUrl");
 
             netJson = testNetworkInfo.toJson();
-            recoveredNetworkInfo = NetworkInfo.fromJson(netJson);
+            recoveredNetworkInfo = new NetworkInfo(netJson);
             recJson = recoveredNetworkInfo.toJson();
             
             // Verify if all the values in the Dictionary are the same

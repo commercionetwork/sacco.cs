@@ -24,11 +24,9 @@ namespace sacco_test
             origCoin = new StdCoin(denom: "PizzaDiFango", amount: "100");
 
             origJson = origCoin.toJson();
-            recoveredCoin = origCoin.fromJson(origJson);
+            recoveredCoin = new StdCoin(origJson);
             recJson = recoveredCoin.toJson();
 
-            // Verify if the object is the same
-            Assert.AreEqual(origCoin, recoveredCoin);
             // Verify if all the values in the Dictionary are the same
             foreach (var item in origJson)
             {
