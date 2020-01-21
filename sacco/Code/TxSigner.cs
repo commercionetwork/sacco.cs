@@ -7,7 +7,6 @@
 // 
 /// Allows to easily sign a [StdTx] object that already contains a message.
 //
-
 using System;
 using System.Collections.Generic;
 using System.Text;

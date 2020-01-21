@@ -7,7 +7,6 @@
 // 
 /// Allows to easily sort a dictionary by its keys - ported by Dart that manages Map instead
 //
-
 using System;
 using System.Collections.Generic;
 using System.Linq;

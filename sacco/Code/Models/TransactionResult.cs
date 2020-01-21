@@ -6,12 +6,10 @@
 // BlockIt s.r.l.
 // 
 //
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Newtonsoft.Json;
-
 
 namespace commercio.sacco.lib
 {

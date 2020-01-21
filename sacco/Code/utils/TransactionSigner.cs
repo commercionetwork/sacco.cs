@@ -7,7 +7,6 @@
 // 
 /// Allows to easily sort a dictionary by its keys - ported by Dart that manages Map instead
 //
-
 using System;
 using Org.BouncyCastle.Asn1.X9;
 using Org.BouncyCastle.Crypto.Signers;
@@ -15,7 +14,6 @@ using Org.BouncyCastle.Math.EC;
 using Org.BouncyCastle.Crypto.Digests;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Math;
-
 
 namespace commercio.sacco.lib
 {

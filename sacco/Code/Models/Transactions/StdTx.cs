@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Newtonsoft.Json;
 
-
 namespace commercio.sacco.lib
 {
     public class StdTx
@@ -57,7 +56,7 @@ namespace commercio.sacco.lib
             }
             output.Add("msg", wkList);
             output.Add("fee", this.fee.toJson());
-            // I am forced to iterate explicitly - Signatures - ATTENTION - I need to account for "?" in Dart code - ToBecompleted
+            // I am forced to iterate explicitly - Signatures - ATTENTION - I need to account for "?" in Dart code
             // Signatures can be null!!
             if (signatures != null)
             {

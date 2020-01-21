@@ -9,10 +9,8 @@
 /// and original BouncyCastle crypto library (that uses a BigInteger array for this type of data)
 //
 //
-
 using System;
 using Org.BouncyCastle.Math;
-
 
 namespace commercio.sacco.lib
 {

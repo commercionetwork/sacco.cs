@@ -8,11 +8,10 @@
 /// [StdMsg] represents a standard message that can be included inside
 /// a transaction.
 //
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-
+using Newtonsoft.Json;
 
 namespace commercio.sacco.lib
 {
@@ -24,13 +23,14 @@ namespace commercio.sacco.lib
         public String type { get; private set; }
 
           /// Map containing the real value of the message.
-        public Dictionary<String, Object> value { get; private set;  }
+        public virtual Dictionary<String, Object> value { get; private set;  }
 
         #endregion
 
         #region Constructors
 
         // Public constructor
+        [JsonConstructor]
         public StdMsg(String type, Dictionary<String, Object> value)
         {
             Trace.Assert(value != null);
@@ -52,7 +52,7 @@ namespace commercio.sacco.lib
 
         /// Converts this instance of [StdMsg] into a Dictionary that can be later used
         /// to serialize it as a JSON object.
-        public Dictionary<String, Object> toJson()
+        public virtual Dictionary<String, Object> toJson()
         {
             Dictionary<String, Object> output;
             output = new Dictionary<String, Object>();

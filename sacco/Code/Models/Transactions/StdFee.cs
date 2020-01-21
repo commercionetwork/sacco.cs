@@ -11,7 +11,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-
 namespace commercio.sacco.lib
 {
     public class StdFee

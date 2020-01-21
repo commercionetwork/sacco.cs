@@ -12,8 +12,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Newtonsoft.Json;
 
-
-
 namespace commercio.sacco.lib
 {
     public class StdCoin

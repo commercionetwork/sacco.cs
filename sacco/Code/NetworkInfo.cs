@@ -7,12 +7,10 @@
 // 
 // Contains the information of a generic Cosmos-based network.
 //
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Newtonsoft.Json;
-
 
 namespace commercio.sacco.lib
 {

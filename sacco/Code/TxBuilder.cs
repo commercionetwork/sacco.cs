@@ -8,7 +8,6 @@
 /// Allows to easily build and sign a [StdTx] that can later be sent over
 /// the network.
 //
-
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;

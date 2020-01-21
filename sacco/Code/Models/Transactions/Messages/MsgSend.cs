@@ -12,11 +12,9 @@
 /// to send.
 /// 
 ///
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-
 
 namespace commercio.sacco.lib
 {
@@ -32,7 +30,7 @@ namespace commercio.sacco.lib
         public String toAddress { get; private set; }
 
         // The override of the value getter is mandatory to obtain a correct codified Json
-        public new Dictionary<String, Object> value
+        public override Dictionary<String, Object> value
         {
             get
             {
@@ -81,7 +79,7 @@ namespace commercio.sacco.lib
         /// Converts this instance of [StdMsg] into a Dictionary that can be later used
         /// to serialize it as a JSON object.
         /// The override is necessary to get a correct JSon
-        public new Dictionary<String, Object> toJson()
+        public override Dictionary<String, Object> toJson()
         {
             Dictionary<String, Object> output;
             output = new Dictionary<String, Object>();

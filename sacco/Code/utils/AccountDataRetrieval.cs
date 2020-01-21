@@ -8,7 +8,6 @@
 /// Allows to easily retrieve the data of an account based on the information
 /// contained inside a given [Wallet].
 //
-
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;

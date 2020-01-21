@@ -12,7 +12,6 @@
 /// The associated [networkInfo] will be used when computing the [bech32Address]
 /// associated with the wallet.
 //
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -27,7 +26,6 @@ using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Security;
 using Org.BouncyCastle.Crypto.Signers;
 using Newtonsoft.Json;
-
 
 namespace commercio.sacco.lib
 {

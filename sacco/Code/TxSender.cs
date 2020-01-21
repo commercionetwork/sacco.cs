@@ -10,7 +10,6 @@
 /// Returns the hash of the transaction once it has been send, or throws an
 /// exception if an error is risen during the sending.
 //
-
 using System;
 using System.Collections.Generic;
 using System.Text;
