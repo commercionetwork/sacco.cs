@@ -76,15 +76,18 @@ namespace commercio.sacco.lib
         {
             // if (value is Dictionary)
             // This should be equivalent in C#
-            Type t = value.GetType();
-            if (t.IsGenericType && t.GetGenericTypeDefinition() == typeof(Dictionary<,>))
+            if (value != null)
             {
-                return sort(value as Dictionary<String, Object>);
-            }
-            else if (t.IsGenericType && t.GetGenericTypeDefinition() == typeof(List<>))
-            {
-                List<object> list = (value as IEnumerable<object>).Cast<object>().ToList();
-                return orderList(list);
+                Type t = value.GetType();
+                if (t.IsGenericType && t.GetGenericTypeDefinition() == typeof(Dictionary<,>))
+                {
+                    return sort(value as Dictionary<String, Object>);
+                }
+                else if (t.IsGenericType && t.GetGenericTypeDefinition() == typeof(List<>))
+                {
+                    List<object> list = (value as IEnumerable<object>).Cast<object>().ToList();
+                    return orderList(list);
+                }
             }
             return value;
         }

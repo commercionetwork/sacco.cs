@@ -74,20 +74,21 @@ namespace commercio.sacco.lib
         /// Converts the given [json] to a [TransactionResult] object.
         private static TransactionResult _convertJson(Dictionary<String, Object> json)
         {
-            Object outValue;
+            Object outValue, outRawLog;
 
-            if (json.TryGetValue("raw_log", out outValue))
+            if (json.TryGetValue("raw_log", out outRawLog))
             {
                 // Some error happened - report it
                 int errCode = 0;
                 String message = "", hash = "";
-
-                Dictionary<String, Object> rawLog = outValue as Dictionary<String, Object>;
                 if (json.TryGetValue("txhash", out outValue))
                     hash = outValue as String;
                 if (json.TryGetValue("code", out outValue))
-                    errCode = (int)outValue;
-                if (json.TryGetValue("message", out outValue))
+                    errCode = Convert.ToInt32(outValue);   // 20200217 - Careful here - the errorcode returned is a 64bit integer!
+                // 20200217 - Get the details about the error
+                Dictionary<String, Object> rawlog = JsonConvert.DeserializeObject<Dictionary<String, Object>>(outRawLog as String);
+                // Here we get the details of the message
+                if (rawlog.TryGetValue("message", out outValue))
                     message = outValue as String;
 
                 return new TransactionResult(

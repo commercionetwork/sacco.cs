@@ -4,7 +4,7 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Company>Blockit S.r.l.</Company>
-    <Copyright>Copyright (c) 2019 Commercio.network, Blockit S.r.l.</Copyright>
+    <Copyright>Copyright (c) 2019-2020 Commercio.network, Blockit S.r.l.</Copyright>
     <Product>Commercio.network</Product>
     <Description>sacco.lib - core library for Commercio.network - NET.Core porting</Description>
     <RootNamespace>commercio.sacco.lib</RootNamespace>
@@ -12,9 +12,11 @@
     <PackageProjectUrl>https://github.com/commercionetwork</PackageProjectUrl>
     <RepositoryUrl>https://github.com/commercionetwork/sacco.cs</RepositoryUrl>
     <RepositoryType>GitHub</RepositoryType>
-    <Version>0.1.0</Version>
+    <Version>0.1.0.1</Version>
     <AssemblyName>commercio.sacco.lib</AssemblyName>
     <PackageReleaseNotes>First version in C#for .NETcore - porting from Dart version</PackageReleaseNotes>
+    <AssemblyVersion>0.1.0.1</AssemblyVersion>
+    <FileVersion>0.1.0.1</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
