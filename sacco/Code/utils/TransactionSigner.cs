@@ -70,8 +70,9 @@ namespace commercio.sacco.lib
                         break;
                     }
                 }
-                else
-                    break;
+                // 20200219 - Removed premature exit from loop
+                // else
+                //      break;
             }
 
             if (recoveryID == -1)
@@ -143,7 +144,7 @@ namespace commercio.sacco.lib
             BigInteger srInv = rInv.Multiply(sig.s).DivideAndRemainder(n)[1];
             BigInteger eInvrInv = (rInv.Multiply(eInv)).DivideAndRemainder(n)[1];
 
-            ECPoint q = (parameters.G).Multiply(eInvrInv).Add(R.Multiply(srInv));
+            ECPoint q = ((parameters.G).Multiply(eInvrInv)).Add(R.Multiply(srInv));
 
             byte[] bytes = q.GetEncoded(false);
             byte[] retBytes = new byte[bytes.Length - 1];
