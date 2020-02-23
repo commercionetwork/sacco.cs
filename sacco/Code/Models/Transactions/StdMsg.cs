@@ -20,9 +20,11 @@ namespace commercio.sacco.lib
         #region Properties
 
         /// String representing the type of the message.
+        [JsonProperty("type", Order = 1)]
         public String type { get; private set; }
 
-          /// Map containing the real value of the message.
+        /// Map containing the real value of the message.
+        [JsonProperty("value", Order = 2)]
         public virtual Dictionary<String, Object> value { get; private set;  }
 
         #endregion

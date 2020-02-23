@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using System.Net.Http;
+using System.Diagnostics;
 using Newtonsoft.Json;
 
 namespace commercio.sacco.lib
@@ -51,6 +52,7 @@ namespace commercio.sacco.lib
                 { "mode", mode}
             };
             String payload = JsonConvert.SerializeObject(requestBody);
+            Debug.WriteLine($"****** Payload: {payload}");
 
             HttpContent content = new StringContent(payload, Encoding.UTF8, "application/json");
             // Get the server response
@@ -78,41 +80,62 @@ namespace commercio.sacco.lib
             List<Object> ListRawLog;
             Dictionary<String, Object> rawlog;
             Boolean successResult;
+            String message, hash;
 
             if (json.TryGetValue("raw_log", out jsonRawLog))
             {
+                // Debug.WriteLine($"****** jsonRawLog: {jsonRawLog}");
+            
                 // Some error happened - report it
                 int errCode = 0;
                 successResult = false;
-                String message = "No Message Reported", hash = "";
+                message = "No Message Reported";
+                hash = "";
                 if (json.TryGetValue("txhash", out outValue))
                     hash = outValue as String;
                 if (json.TryGetValue("code", out outValue))
                     errCode = Convert.ToInt32(outValue);   // 20200217 - Careful here - the errorcode returned is a 64bit integer!
                 // 20200217 - Get the details about the error
+                rawlog = new Dictionary<String, Object>();
                 try
                 {
-                    rawlog = new Dictionary<String, Object>();
-                    try
+                    if (errCode != 0)
                     {
-                        // First Try - Assume we have a list of rawlogs
-                        ListRawLog = JsonConvert.DeserializeObject<List<Object>>(jsonRawLog as string);
-                        // Get the first element of the list
-                        rawlog = JsonConvert.DeserializeObject<Dictionary<String, Object>>(ListRawLog[0].ToString());
+                        try
+                        {
+                            // First Try - Assume we have just a single rawlog
+                            rawlog = JsonConvert.DeserializeObject<Dictionary<String, Object>>(jsonRawLog.ToString());
+                            // Debug.WriteLine("****** Errcode != 0, Deserialize in a dictionary OK");
+                        }
+                        catch
+                        {
+                            // Second try - we have a list of rawlogs
+                            rawlog = JsonConvert.DeserializeObject<Dictionary<String, Object>>(jsonRawLog.ToString());
+                            // Debug.WriteLine("****** Errcode != 0, Exception in deserialize a Dictionary, Deserialize in a list OK");
+                        }
                     }
-                    catch
+                    else
                     {
-                        // Second try - we have just a single rawlog
-                        rawlog = JsonConvert.DeserializeObject<Dictionary<String, Object>>(jsonRawLog.ToString());
+                        try
+                        {
+                            // First Try - Assume we have a list of rawlogs
+                            ListRawLog = JsonConvert.DeserializeObject<List<Object>>(jsonRawLog as string);
+                            // Get the first element of the list
+                            rawlog = JsonConvert.DeserializeObject<Dictionary<String, Object>>(ListRawLog[0].ToString());
+                            // Debug.WriteLine("****** Deserialize in a List OK");
+                        }
+                        catch
+                        {
+                            // Second try - we have just a single rawlog
+                            rawlog = JsonConvert.DeserializeObject<Dictionary<String, Object>>(jsonRawLog.ToString());
+                            // Debug.WriteLine("****** Exception in deserialize a List, Deserialize in a dictionary OK");
+                        }
                     }
-                    finally
-                    {
-                        // Here we get the details of the message
-                        if (rawlog.TryGetValue("message", out outValue))
-                            message = outValue as String;
-                        if (rawlog.TryGetValue("success", out outValue))
-                            successResult = (Boolean)outValue;
-                    }
+                    // Here we get the details of the message
+                    if (rawlog.TryGetValue("message", out outValue))
+                        message = outValue as String;
+                    if (rawlog.TryGetValue("success", out outValue))
+                        successResult = (Boolean)outValue;
                 }
                 catch
                 {
@@ -120,7 +143,7 @@ namespace commercio.sacco.lib
                     message = $"Internal error - unable to decode message result - '${jsonRawLog.ToString()}'";
                     successResult = false;
                 }
-
+                // Debug.WriteLine($"****** Message: {message}");
                 return new TransactionResult(
                     hash: hash,
                     success: successResult,
@@ -133,7 +156,7 @@ namespace commercio.sacco.lib
             else
             {
                 // Otherwise, result OK
-                String hash = "";
+                hash = "";
                 if (json.TryGetValue("txhash", out outValue))
                     hash = outValue as String;
                 return new TransactionResult(

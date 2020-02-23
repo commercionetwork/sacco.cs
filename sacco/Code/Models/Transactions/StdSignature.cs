@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Newtonsoft.Json;
 
 namespace commercio.sacco.lib
 {
@@ -16,7 +17,9 @@ namespace commercio.sacco.lib
     {
         #region Properties
 
+        [JsonProperty("publicKey", Order = 1)]
         public StdPublicKey publicKey { get; }
+        [JsonProperty("value", Order = 2)]
         public String value { get; }
 
         #endregion

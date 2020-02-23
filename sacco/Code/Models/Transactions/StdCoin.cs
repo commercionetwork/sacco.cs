@@ -18,7 +18,9 @@ namespace commercio.sacco.lib
     {
         #region Properties
 
+        [JsonProperty("amount", Order = 1)]
         public String amount { get; private set; }
+        [JsonProperty("denom", Order = 2)]
         public String denom { get; private set; }
 
         #endregion

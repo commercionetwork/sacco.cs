@@ -17,9 +17,13 @@ namespace commercio.sacco.lib
     {
         #region Properties
 
+        [JsonProperty("messages", Order = 3)]
         public List<StdMsg> messages { get;  }
+        [JsonProperty("signatures", Order = 4)]
         public List<StdSignature> signatures { get;  }
+        [JsonProperty("fee", Order = 1)]
         public StdFee fee { get;  }
+        [JsonProperty("memo", Order = 2)]
         public String memo { get;  }
 
         #endregion

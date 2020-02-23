@@ -15,6 +15,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Newtonsoft.Json;
 
 namespace commercio.sacco.lib
 {
@@ -23,10 +24,13 @@ namespace commercio.sacco.lib
         #region Properties
 
         /// Coins that will be sent.
+        [JsonProperty("amount", Order = 1)]
         public List<StdCoin> amount { get; private set; }
         /// Bech32 address of the sender.
+        [JsonProperty("fromAddress", Order = 2)]
         public String fromAddress { get; private set; }
         /// Bech32 address of the recipient.
+        [JsonProperty("toAddress", Order = 3)]
         public String toAddress { get; private set; }
 
         // The override of the value getter is mandatory to obtain a correct codified Json

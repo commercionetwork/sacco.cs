@@ -20,11 +20,16 @@ namespace commercio.sacco.lib
     {
         #region Properties
 
+        [JsonProperty("bech32Hrp", Order = 1)]
         public String bech32Hrp { get; private set; }           // Bech32 human readable part
+        [JsonProperty("lcdUrl", Order = 4)]
         public String lcdUrl { get; private set; }              // Url to call when accessing the LCD
         // Optional fields
+        [JsonProperty("name", Order = 5)]
         public String name { get; private set; }                // Human readable chain name
+        [JsonProperty("iconUrl", Order = 3)]
         public String iconUrl { get; private set; }             // Chain icon url
+        [JsonProperty("defaultTokenDenom", Order = 2)]
         public String defaultTokenDenom { get; private set; }
 
         #endregion

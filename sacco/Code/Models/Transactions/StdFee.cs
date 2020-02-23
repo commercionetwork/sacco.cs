@@ -10,6 +10,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Newtonsoft.Json;
 
 namespace commercio.sacco.lib
 {
@@ -18,7 +19,9 @@ namespace commercio.sacco.lib
         #region Properties
 
         // Properties Read Only
+        [JsonProperty("amount", Order = 1)]
         public List<StdCoin> amount { get; }
+        [JsonProperty("gas", Order = 2)]
         public String gas { get;  }
 
         #endregion
