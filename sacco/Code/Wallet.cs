@@ -44,13 +44,17 @@ namespace commercio.sacco.lib
 
         #region Properties
 
+        [JsonProperty("address", Order = 1)]
         public byte[] address { get; private set; }
+        [JsonProperty("privateKey", Order = 4)]
         public byte[] privateKey { get; private set; }
+        [JsonProperty("publicKey", Order = 5)]
         public byte[] publicKey { get; private set; }
-
+        [JsonProperty("networkInfo", Order = 3)]
         public NetworkInfo networkInfo { get; private set; }
 
         /// Returns the associated [address] as a Bech32 string.
+        [JsonProperty("bech32Address", Order = 2)]
         public String bech32Address
         {
             get

@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Newtonsoft.Json;
 
 namespace commercio.sacco.lib
 {
@@ -16,11 +17,17 @@ namespace commercio.sacco.lib
     {
         #region Properties
 
+        [JsonProperty("chainId", Order = 2)]
         public String chainId { get;  }
+        [JsonProperty("accountNumber", Order = 1)]
         public String accountNumber { get;  }
+        [JsonProperty("sequence", Order = 6)]
         public String sequence { get;  }
+        [JsonProperty("memo", Order = 4)]
         public String memo { get;  }
+        [JsonProperty("fee", Order = 3)]
         public Dictionary<String, Object> fee { get;  }
+        [JsonProperty("msgs", Order = 5)]
         public List<Dictionary<String, Object>> msgs { get;  }
 
         #endregion

@@ -8,6 +8,7 @@
 /// Allows to easily sort a dictionary by its keys - ported by Dart that manages Map instead
 //
 using System;
+using System.Diagnostics;
 using Org.BouncyCastle.Asn1.X9;
 using Org.BouncyCastle.Crypto.Signers;
 using Org.BouncyCastle.Math.EC;
@@ -36,12 +37,12 @@ namespace commercio.sacco.lib
         #region Public Methods
         public static byte[] deriveFrom(byte[] message, ECPrivateKeyParameters privateKey, ECPublicKeyParameters publicKey)
         {
-            var curve = ECNamedCurveTable.GetByName("secp256k1");
+            X9ECParameters curve = ECNamedCurveTable.GetByName("secp256k1");
             ECDomainParameters _params = new ECDomainParameters(curve.Curve, curve.G, curve.N, curve.H, curve.GetSeed());
             BigInteger _halfCurveOrder = _params.N.ShiftRight(1);
 
-            ECDsaSigner ecdsaSigner = new ECDsaSigner(new HMacDsaKCalculator (new Sha256Digest( )));
-            ecdsaSigner.Init(true, privateKey) ;
+            ECDsaSigner ecdsaSigner = new ECDsaSigner(new HMacDsaKCalculator(new Sha256Digest()));
+            ecdsaSigner.Init(true, privateKey);
 
             ECSignature ecSignature = new ECSignature(ecdsaSigner.GenerateSignature(message));
 
@@ -51,35 +52,49 @@ namespace commercio.sacco.lib
                 ecSignature = new ECSignature(ecSignature.r, canonicalS);
             }
 
-            byte[] wkPublicKeyBytes = publicKey.Q.GetEncoded(false);
-            byte[] publicKeyBytes = new byte[wkPublicKeyBytes.Length-1];
-            Array.Copy(wkPublicKeyBytes, 1, publicKeyBytes, 0, wkPublicKeyBytes.Length - 1);
-
-            BigInteger publicKeyBigInt = _bytesToInt(publicKeyBytes);
-
-            int recoveryID = -1;
-            for (int i = 0; i < 4; i++)
+            // Create a signer to check signature
+            ECDsaSigner ecdsaChecker = new ECDsaSigner(new HMacDsaKCalculator(new Sha256Digest()));
+            ecdsaChecker.Init(false, publicKey);
+            bool signatureOK = ecdsaChecker.VerifySignature(message, ecSignature.r, ecSignature.s);
+            if (signatureOK == false)
             {
-                BigInteger k = _recoverFromSignature(i, ecSignature, message, _params);
-                // Need to check for null here!
-                if (k != null)
-                {
-                    if (k.CompareTo(publicKeyBigInt) == 0)
-                    {
-                        recoveryID = i;
-                        break;
-                    }
-                }
-                // 20200219 - Removed premature exit from loop
-                // else
-                //      break;
-            }
-
-            if (recoveryID == -1)
-            {
-                System.ArgumentException argEx = new System.ArgumentException("Invalid recoverable key!");
+                System.ArgumentException argEx = new System.ArgumentException("TransactionSigner - Error in checking signature!");
                 throw argEx;
             }
+
+            // 20200223 Rick - The code to recover the signature is somewhat bugged, and it loks like it's no use.
+            // I replaced it with a check for the correcness of the signature above.
+            // This code is commented out at the moment.
+            //byte[] wkPublicKeyBytes = publicKey.Q.GetEncoded(false);
+            //byte[] publicKeyBytes = new byte[wkPublicKeyBytes.Length - 1];
+            //Array.Copy(wkPublicKeyBytes, 1, publicKeyBytes, 0, wkPublicKeyBytes.Length - 1);
+
+            //BigInteger publicKeyBigInt = _bytesToInt(publicKeyBytes);
+
+            //int recoveryID = -1;
+            //for (int i = 0; i < 4; i++)
+            //{
+            //    BigInteger k = _recoverFromSignature(i, ecSignature, message, _params);
+            //    // Need to check for null here!
+            //    if (k != null)
+            //    {
+            //        if (k.CompareTo(publicKeyBigInt) == 0)
+            //        {
+            //            recoveryID = i;
+            //            break;
+            //        }
+            //    }
+            //    // 20200219 - Removed premature exit from loop
+            //    // else
+            //    //      break;
+            //}
+            //Debug.WriteLine($"****** _recoverFromSignature: recoveryId = {recoveryID}");
+
+            //if (recoveryID == -1)
+            //{
+            //    System.ArgumentException argEx = new System.ArgumentException("Invalid recoverable key!");
+            //    throw argEx;
+            //}
 
             // Final assembly
             byte[] r = _intToBytes(ecSignature.r);
