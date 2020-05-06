@@ -65,6 +65,7 @@ namespace commercio.sacco.lib
             AccountData wkAccount;
             Dictionary<String, Object> jsonResponse, json = null, value = null;
             List<StdCoin> coins = null;
+            // String accountNumber = "", sequence = "";
             String accountNumber = "", sequence = "";
             Object outValue;
 
@@ -82,13 +83,20 @@ namespace commercio.sacco.lib
                 value = (outValue as JObject).ToObject<Dictionary<String, Object>>();
             }
             // get various data from the value
+            // RC - 20200505 - Modificed the code in order to get account number and sequenze also when they are returned as int
             if (value.TryGetValue("account_number", out outValue))
             {
-                accountNumber = outValue as String;
+                if (outValue is string)
+                    accountNumber = outValue as String;
+                else 
+                    accountNumber = outValue.ToString();
             }
             if (value.TryGetValue("sequence", out outValue))
             {
-                sequence = outValue as String;
+                if (outValue is string)
+                    sequence = outValue as String;
+                else 
+                    sequence = outValue.ToString();
             }
             // Get the coins - Careful, this is a List! so it's decoded as a JArray
             if (value.TryGetValue("coins", out outValue))
