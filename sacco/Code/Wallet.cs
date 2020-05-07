@@ -14,6 +14,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Diagnostics;
 using NBitcoin;
 using Org.BouncyCastle.Asn1;
@@ -46,11 +47,11 @@ namespace commercio.sacco.lib
 
         [JsonProperty("address", Order = 1)]
         public byte[] address { get; private set; }
-        [JsonProperty("privateKey", Order = 4)]
+        [JsonProperty("privateKey", Order = 5)]
         public byte[] privateKey { get; private set; }
-        [JsonProperty("publicKey", Order = 5)]
+        [JsonProperty("publicKey", Order = 6)]
         public byte[] publicKey { get; private set; }
-        [JsonProperty("networkInfo", Order = 3)]
+        [JsonProperty("networkInfo", Order = 4)]
         public NetworkInfo networkInfo { get; private set; }
 
         /// Returns the associated [address] as a Bech32 string.
@@ -65,6 +66,23 @@ namespace commercio.sacco.lib
                 return (s);
             }
         }
+
+        /// Returns the associated [publicKey] as a Bech32 string
+        [JsonProperty("bech32PublicKey", Order = 3)]
+        public String bech32PublicKey
+        {
+            get
+            {
+                String s;
+
+                byte[] type = { 235,90,233,135,33 };
+                String prefix = networkInfo.bech32Hrp + "pub";
+                byte[] fullPublicKey = type.Concat(publicKey).ToArray();
+                s = Bech32Engine.Encode(prefix, fullPublicKey);
+                return (s);
+            }
+        }
+
 
 
         /// Returns the associated [privateKey] as an [ECPrivateKey] instance - in C# we use instead ECPrivateKeyParameters
@@ -169,7 +187,7 @@ namespace commercio.sacco.lib
             byte[] privateKey = derivedNode.PrivateKey.ToBytes();
 
             // Get the curve data
-            var secp256k1 = ECNamedCurveTable.GetByName("secp256k1");
+            X9ECParameters secp256k1 = ECNamedCurveTable.GetByName("secp256k1");
             ECPoint point = secp256k1.G;
 
             // Compute the curve point associated to the private key
@@ -250,7 +268,13 @@ namespace commercio.sacco.lib
         {
             ECDsaSigner ecdsaSigner = new ECDsaSigner();
             ecdsaSigner.Init(true, new ParametersWithRandom(ecPrivateKey, _getSecureRandom()));
-            ECSignature ecSignature = new ECSignature(ecdsaSigner.GenerateSignature(data));
+            ECSignature ecSignatureWk = new ECSignature(ecdsaSigner.GenerateSignature(data));
+            // RC 20200507 - Canonicalize signature (is this necessary?)
+            ECSignature ecSignature = _toCanonicalised(ecSignatureWk);
+            // RC 20200507 - Create the array in the new way - no more ASN1
+            byte[] sigBytes = ecSignature.r.ToByteArray().Concat(ecSignature.s.ToByteArray()).ToArray();
+            return (sigBytes);
+            /*
             // Create the Asn1 DER sequence for the signature
             // Quite different from Dart approach
             Asn1EncodableVector asn1Vect = new Asn1EncodableVector();
@@ -258,6 +282,8 @@ namespace commercio.sacco.lib
             asn1Vect.Add(new DerInteger(ecSignature.s));
             DerSequence sequence = new DerSequence(asn1Vect);
             return sequence.GetEncoded();
+            */
+
         }
 
         /// Converts the current [Wallet] instance into a JSON object.
@@ -274,11 +300,27 @@ namespace commercio.sacco.lib
 
 
 
-    #endregion
+        #endregion
 
-    #region Helpers
+        #region Helpers
 
-    #endregion
+        /// Canonicalizes [signature].
+        /// This is necessary because if a message can be signed by (r, s), it can also be signed by (r, -s (mod N)).
+        /// More details at
+        /// https://github.com/web3j/web3j/blob/master/crypto/src/main/java/org/web3j/crypto/ECDSASignature.java#L27
+        static ECSignature _toCanonicalised(ECSignature signature)
+        {
+            X9ECParameters _params = ECNamedCurveTable.GetByName("secp256k1");
+            BigInteger _halfCurveOrder = _params.N.ShiftRight(1);
+            if (signature.s.CompareTo(_halfCurveOrder) > 0)
+            {
+                BigInteger canonicalisedS = _params.N.Subtract(signature.s);
+                signature = new ECSignature(signature.r, canonicalisedS);
+            }
+            return signature;
+        }
+
+        #endregion
 
     }
 }
