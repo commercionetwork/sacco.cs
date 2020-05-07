@@ -80,13 +80,13 @@ namespace commercio.sacco.lib
             List<Object> ListRawLog;
             Dictionary<String, Object> rawlog;
             Boolean successResult;
-            String message, hash;
+            String message, hash, rawString;
 
             if (json.TryGetValue("raw_log", out jsonRawLog))
             {
                 // Debug.WriteLine($"****** jsonRawLog: {jsonRawLog}");
             
-                // Some error happened - report it
+                // Try to undestand the transaction result
                 int errCode = 0;
                 successResult = false;
                 message = "No Message Reported";
@@ -96,10 +96,11 @@ namespace commercio.sacco.lib
                 if (json.TryGetValue("code", out outValue))
                     errCode = Convert.ToInt32(outValue);   // 20200217 - Careful here - the errorcode returned is a 64bit integer!
                 // 20200217 - Get the details about the error
-                rawlog = new Dictionary<String, Object>();
                 try
                 {
-                    if (errCode != 0)
+                    rawlog = new Dictionary<String, Object>();
+                    rawString = jsonRawLog.ToString();
+                    if ((rawString[0] == '{') && (rawString.IndexOf("message") != -1))
                     {
                         try
                         {
@@ -110,32 +111,26 @@ namespace commercio.sacco.lib
                         catch
                         {
                             // Second try - we have a list of rawlogs
-                            rawlog = JsonConvert.DeserializeObject<Dictionary<String, Object>>(jsonRawLog.ToString());
-                            // Debug.WriteLine("****** Errcode != 0, Exception in deserialize a Dictionary, Deserialize in a list OK");
-                        }
-                    }
-                    else
-                    {
-                        try
-                        {
-                            // First Try - Assume we have a list of rawlogs
                             ListRawLog = JsonConvert.DeserializeObject<List<Object>>(jsonRawLog as string);
                             // Get the first element of the list
                             rawlog = JsonConvert.DeserializeObject<Dictionary<String, Object>>(ListRawLog[0].ToString());
-                            // Debug.WriteLine("****** Deserialize in a List OK");
+                            // Debug.WriteLine("****** Errcode != 0, Exception in deserialize a Dictionary, Deserialize in a list OK");
                         }
-                        catch
-                        {
-                            // Second try - we have just a single rawlog
-                            rawlog = JsonConvert.DeserializeObject<Dictionary<String, Object>>(jsonRawLog.ToString());
-                            // Debug.WriteLine("****** Exception in deserialize a List, Deserialize in a dictionary OK");
-                        }
+                        // Here we get the details of the message
+                        if (rawlog.TryGetValue("message", out outValue))
+                            message = outValue as String;
+                        if (rawlog.TryGetValue("success", out outValue))
+                            successResult = (Boolean)outValue;
                     }
-                    // Here we get the details of the message
-                    if (rawlog.TryGetValue("message", out outValue))
-                        message = outValue as String;
-                    if (rawlog.TryGetValue("success", out outValue))
-                        successResult = (Boolean)outValue;
+                    else
+                    {
+                        // We have just a string - if not empty it's an error...
+                        message = rawString;
+                        if (message.Length < 3)     // Usually it's "[]"
+                            successResult = true;
+                        else
+                            successResult = false;
+                    }
                 }
                 catch
                 {
