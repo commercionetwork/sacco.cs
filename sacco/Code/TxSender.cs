@@ -65,6 +65,7 @@ namespace commercio.sacco.lib
 
             // Convert the response
             String encodedJson = await response.Content.ReadAsStringAsync();
+            Debug.WriteLine($"******+++++++ encodedJson: {encodedJson}");
             Dictionary<String, Object> json = JsonConvert.DeserializeObject<Dictionary<String, Object>>(encodedJson);
             return _convertJson(json);
         }
@@ -87,14 +88,19 @@ namespace commercio.sacco.lib
                 // Debug.WriteLine($"****** jsonRawLog: {jsonRawLog}");
             
                 // Try to undestand the transaction result
-                int errCode = 0;
-                successResult = false;
+                int errCode = 0;       // Mark an OK by default
+                successResult = true;
                 message = "No Message Reported";
                 hash = "";
                 if (json.TryGetValue("txhash", out outValue))
                     hash = outValue as String;
                 if (json.TryGetValue("code", out outValue))
+                {
                     errCode = Convert.ToInt32(outValue);   // 20200217 - Careful here - the errorcode returned is a 64bit integer!
+                    // Be sure to report a success = false if there is an eror code
+                    if (errCode != 0)
+                        successResult = false;
+                }
                 // 20200217 - Get the details about the error
                 try
                 {
@@ -126,10 +132,7 @@ namespace commercio.sacco.lib
                     {
                         // We have just a string - if not empty it's an error...
                         message = rawString;
-                        if (message.Length < 3)     // Usually it's "[]"
-                            successResult = true;
-                        else
-                            successResult = false;
+                        // Keep the OK result by default
                     }
                 }
                 catch

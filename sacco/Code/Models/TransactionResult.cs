@@ -27,9 +27,11 @@ namespace commercio.sacco.lib
         public bool success { get; private set; }
 
         /// Tells which error has verified if the sending was not successful.
-        /// Please note that this field is going to be:
-        /// - `null` if [success] is `true`.
-        /// - a valid [TransactionError] if [success] is `false`
+        /// RC 20200508 - New cosmos sdk 0.38 - Transaction error can be different from null also in case of success - test errorCode in case
+        /// The following comments *** are deprecated
+        /// ***Please note that this field is going to be:
+        /// ***- `null` if [success] is `true`.
+        /// ***- a valid [TransactionError] if [success] is `false`
         public TransactionError error { get; private set; }
 
         #endregion
