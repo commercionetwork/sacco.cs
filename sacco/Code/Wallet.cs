@@ -36,7 +36,7 @@ namespace commercio.sacco.lib
     {
         #region Instance Variables
         // Careful with this...
-        const String DERIVATION_PATH = @"m/44'/118'/0'/0/0";
+        const String DERIVATION_PATH = @"m/44'/118'/0'/0";
         // This need to be fixed lenght for Address Decoding capabilities
         const int ADDRESS_LENGTH = 20;
         // const int SHA256DIGEST_OUT_LENGTH = 32;
@@ -75,7 +75,7 @@ namespace commercio.sacco.lib
             {
                 String s;
 
-                byte[] type = { 235,90,233,135,33 };
+                byte[] type = { 235, 90, 233, 135, 33 };
                 String prefix = networkInfo.bech32Hrp + "pub";
                 byte[] fullPublicKey = type.Concat(publicKey).ToArray();
                 s = Bech32Engine.Encode(prefix, fullPublicKey);
@@ -160,7 +160,7 @@ namespace commercio.sacco.lib
 
         /// Derives the private key from the given [mnemonic] using the specified
         /// [networkInfo].
-        public static Wallet derive(List<String> mnemonic, NetworkInfo networkInfo)
+        public static Wallet derive(List<String> mnemonic, NetworkInfo networkInfo, String lastDerivationPathSegment = "0")
         {
             Mnemonic bip39;
 
@@ -180,8 +180,19 @@ namespace commercio.sacco.lib
             byte[] seed = bip39.DeriveSeed();
             // Using the seed in a BIP32 instance
             ExtKey root = new ExtKey(seed);
-            //  Create the Keypath
-            KeyPath derivationPath = new KeyPath(DERIVATION_PATH);
+            // Check for correct lastDerivationPathSegment
+            int segValue = -1;
+            bool isNumeric = int.TryParse(lastDerivationPathSegment, out segValue);
+            if ((isNumeric == false) || (segValue < 0))
+            {
+                // Exception - derivation path not valid!
+                System.ArgumentException argEx = new System.ArgumentException($"Argument Exception - Invalid Derivation Path: '{lastDerivationPathSegment}'");
+                throw argEx;
+            }
+            //  Create the Keypath - with the last Path Segment
+            String derivedPathString = $"{DERIVATION_PATH}/{lastDerivationPathSegment}";
+            KeyPath derivationPath = new KeyPath(derivedPathString);
+            // Get the node
             ExtKey derivedNode = root.Derive(derivationPath);
             // Get the private key
             byte[] privateKey = derivedNode.PrivateKey.ToBytes();

@@ -14,7 +14,7 @@ namespace sacco_test
         // Const to be used for testing
         readonly NetworkInfo networkInfo = new NetworkInfo(bech32Hrp: "cosmos", lcdUrl: "");
 
-        readonly Dictionary<String,String> testVectors = new Dictionary<String, String>
+        readonly Dictionary<String, String> testVectors = new Dictionary<String, String>
         {
             { "cosmos1huydeevpz37sd9snkgul6070mstupukw00xkw9",
                 "final random flame cinnamon grunt hazard easily mutual resist pond solution define knife female tongue crime atom jaguar alert library best forum lesson rigid" },
@@ -38,6 +38,37 @@ namespace sacco_test
                 "solve retire concert illegal garage recall skill power lyrics bunker vintage silver situate gadget talent settle left snow fire bubble bar robot swing senior" }
         };
 
+        // Generated using a 'derivation path' that ends with 1
+        readonly Dictionary<String, String> testVectors2 = new Dictionary<String, String>
+        {
+            { "cosmos1q6yq3vrv5f6l8sk8k6kgj5tkepvmtj4whu7h2k",
+                "final random flame cinnamon grunt hazard easily mutual resist pond solution define knife female tongue crime atom jaguar alert library best forum lesson rigid" },
+            { "cosmos14j0fjpffgyu2swkwtyht4sgaclxyexkdp9n5ph",
+                "must lottery surround bike cash option split aspect cram volume repeat goose enemy mouse ostrich crowd thing huge fiscal fuel canal tuna hair educate" },
+            { "cosmos10tk3v8kqc80jrhjslr9wntmejf5f9vrkxgg04u",
+                "pencil flat shed laundry idle phone glow hint dilemma roast bulb shop spice birth rigid project bar night song pluck then illegal obvious syrup" },
+            { "cosmos152a23p6h3txkealspwm99npv83dnaqputx66ak",
+                "embrace subway again gift toilet price security ordinary zoo owner orbit age destroy invest little scheme crumble leisure remove muffin shoe deliver defy draw" },
+            { "cosmos1ltxdweu3jk8w8l9tgsr82ppkvkur0czrzchnd0",
+                "garage jungle error orient puzzle crater cancel walk tissue fence dynamic bean aisle ring adult truth dog chapter claw six exhaust soda planet cycle" },
+            { "cosmos1t6fm3r9nyuzsys3yumhdt02k39fchqu284mtae",
+                "seven confirm glass lawsuit flower test power rain animal argue fetch play local erupt curious certain february hover zone carpet pipe alarm capable box" },
+            { "cosmos1dw73dk53kkws0mes3h93sjrjn3jjp5nny8rgk5",
+                "minor craft between drive depart endorse fresh blade drill help skull hub evolve door sea comic pulse chicken awesome rebel leave series live brain" },
+            { "cosmos1sealpst3ge9d7x60wp0ne2dmefv89m6guv63q5",
+                "hurdle satisfy excess hub month great ordinary crane begin laugh evoke domain humor absent dawn blanket prefer ice ripple auto boost vast version soup" },
+            { "cosmos1rhk3la5zc0ntcehdvkf7f8x6ewjw02v2zuv2sy",
+                "pipe apple lobster gadget front cloud reject whip village idle ready concert general scrub silver neutral crop oyster tackle enlist winner milk duty tomato" },
+            { "cosmos17r94720wt2ymddvx9guettljljf59zyh97t4mf",
+                "solve retire concert illegal garage recall skill power lyrics bunker vintage silver situate gadget talent settle left snow fire bubble bar robot swing senior" }
+        };
+
+        readonly Dictionary<String, String> testVectors3 = new Dictionary<String, String>
+        {
+            { "cosmospub1addwnpepqd4ns87g34dhzaasjeuywu22y2ygmcy0n7kl65j96q5gzftx6zef27fcxur",
+                "final random flame cinnamon grunt hazard easily mutual resist pond solution define knife female tongue crime atom jaguar alert library best forum lesson rigid" }
+        };
+
         readonly String singleVector = "final random flame cinnamon grunt hazard easily mutual resist pond solution define knife female tongue crime atom jaguar alert library best forum lesson rigid";
 
         readonly String singleVector2 = "will hard topic spray beyond ostrich moral morning gas loyal couch horn boss across age post october blur piece wheel film notable word man";
@@ -57,6 +88,34 @@ namespace sacco_test
         }
 
         [TestMethod]
+        public void TestWalletOtherDerivationPath()
+        {
+            {
+                foreach (var item in testVectors2)
+                {
+                    List<String> mnemonic = new List<String>(item.Value.Split(" ", StringSplitOptions.RemoveEmptyEntries));
+                    Wallet wallet = Wallet.derive(mnemonic, networkInfo, lastDerivationPathSegment: "1");
+                    // Check it
+                    Assert.AreEqual(wallet.bech32Address, item.Key);
+                };
+            };
+        }
+
+        [TestMethod]
+        public void TestWalletCorrectBech32PublicKey()
+        {
+            {
+                foreach (var item in testVectors3)
+                {
+                    List<String> mnemonic = new List<String>(item.Value.Split(" ", StringSplitOptions.RemoveEmptyEntries));
+                    Wallet wallet = Wallet.derive(mnemonic, networkInfo);
+                    // Check it
+                    Assert.AreEqual(wallet.bech32PublicKey, item.Key);
+                };
+            };
+        }
+
+        [TestMethod]
         public void TestJsonWallet()
         {
             //This is the comparison class
@@ -71,6 +130,7 @@ namespace sacco_test
             ComparisonResult result = compareLogic.Compare(wallet, retrievedWallet);
             Assert.AreEqual(result.AreEqual, true);
         }
+
 
         [TestMethod]
         public void TestWalletSignaturesNonDeterministic()
