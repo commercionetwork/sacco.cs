@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace commercio.sacco.lib
 {
@@ -37,6 +38,7 @@ namespace commercio.sacco.lib
             this.amount = amount;
         }
 
+        // Constructor from a Dictionary
         public StdCoin (Dictionary<String, Object> json)
         {
             Object outValue;
@@ -44,6 +46,19 @@ namespace commercio.sacco.lib
                 this.denom = outValue as String;
             if (json.TryGetValue("amount", out outValue))
                 this.amount = outValue as String;
+        }
+
+        // Alternate Constructor from a Json JObject
+        public StdCoin(JObject json)
+        {
+            this.denom = (String)json["denom"];
+            this.amount = (String)json["amount"];
+
+            //Object outValue;
+            //if (json.TryGetValue("denom", out outValue))
+            //    this.denom = outValue as String;
+            //if (json.TryGetValue("amount", out outValue))
+            //    this.amount = outValue as String;
         }
 
         #endregion

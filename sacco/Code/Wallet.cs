@@ -20,12 +20,14 @@ using NBitcoin;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.X9;
 using Org.BouncyCastle.Math.EC;
+using Org.BouncyCastle.Crypto;
+using Org.BouncyCastle.Crypto.Signers;
 using Org.BouncyCastle.Crypto.Prng;
 using Org.BouncyCastle.Crypto.Digests;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Security;
-using Org.BouncyCastle.Crypto.Signers;
+//using Org.BouncyCastle.Crypto.Signers;
 using Newtonsoft.Json;
 
 namespace commercio.sacco.lib
@@ -285,6 +287,19 @@ namespace commercio.sacco.lib
             // RC 20200507 - Create the array in the new way - no more ASN1
             byte[] sigBytes = ecSignature.r.ToByteArray().Concat(ecSignature.s.ToByteArray()).ToArray();
             return (sigBytes);
+
+            //SecNamedCurves curve = SecNamedCurves.GetByName("secp256k1");
+            //var domain = new ECDomainParameters(curve.Curve, curve.G, curve.N, curve.H);
+            //ECPrivateKeyParameters keyParameters = new BC.Crypto.Parameters.ECPrivateKeyParameters(new BC.Math.BigInteger(ecPrivateKey), domain);
+
+            //ISigner signer = SignerUtilities.GetSigner("SHA-256withECDSA");
+            //// signer.Init(true, new ParametersWithRandom(ecPrivateKey, _getSecureRandom()));
+            //signer.Init(true, ecPrivateKey);
+            //signer.BlockUpdate(data, 0, data.Length);
+            //byte[] signature = signer.GenerateSignature();
+
+            //return signature;
+
             /*
             // Create the Asn1 DER sequence for the signature
             // Quite different from Dart approach
