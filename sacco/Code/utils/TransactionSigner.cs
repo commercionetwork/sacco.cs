@@ -8,6 +8,8 @@
 /// Allows to easily sort a dictionary by its keys - ported by Dart that manages Map instead
 //
 using System;
+using System.Linq;
+using System.Collections.Generic;
 using System.Diagnostics;
 using Org.BouncyCastle.Asn1.X9;
 using Org.BouncyCastle.Crypto.Signers;
@@ -37,15 +39,21 @@ namespace commercio.sacco.lib
         #region Public Methods
         public static byte[] deriveFrom(byte[] message, ECPrivateKeyParameters privateKey, ECPublicKeyParameters publicKey)
         {
+            // RC 20201018 - Rearrange Signature in order to use the same approach of wallet.sign
             X9ECParameters curve = ECNamedCurveTable.GetByName("secp256k1");
             ECDomainParameters _params = new ECDomainParameters(curve.Curve, curve.G, curve.N, curve.H, curve.GetSeed());
             BigInteger _halfCurveOrder = _params.N.ShiftRight(1);
 
             ECDsaSigner ecdsaSigner = new ECDsaSigner(new HMacDsaKCalculator(new Sha256Digest()));
             ecdsaSigner.Init(true, privateKey);
-
             ECSignature ecSignature = new ECSignature(ecdsaSigner.GenerateSignature(message));
 
+            // RC 20201018 - This approach is better, as it will generate randomized signatures - In case, TestTXSigner needs to be rearranged too
+            //ECDsaSigner ecdsaSigner = new ECDsaSigner();
+            //ecdsaSigner.Init(true, new ParametersWithRandom(privateKey, Wallet.getSecureRandom()));
+            //ECSignature ecSignature = new ECSignature(ecdsaSigner.GenerateSignature(message));
+
+            // Canonicalize Signature...
             if (ecSignature.s.CompareTo(_halfCurveOrder) > 0)
             {
                 BigInteger canonicalS = _params.N.Subtract(ecSignature.s);
@@ -62,7 +70,16 @@ namespace commercio.sacco.lib
                 throw argEx;
             }
 
-            // 20200223 Rick - The code to recover the signature is somewhat bugged, and it loks like it's no use.
+            // RC 20201018 - Again Black Magic as in Wallet.sign
+            byte[] sigBytes = ecSignature.r.ToByteArray().Concat(ecSignature.s.ToByteArray()).ToArray();
+            // Black magic - by Marco Ruaro - 20201016
+            if (sigBytes.Length > 64)
+            {
+                sigBytes = sigBytes.Skip(1).ToArray();
+            }
+            return (sigBytes);
+
+            // 20200223 Rick - The code to recover the signature is somewhat bugged, and it looks like it's no use.
             // I replaced it with a check for the correcness of the signature above.
             // This code is commented out at the moment.
             //byte[] wkPublicKeyBytes = publicKey.Q.GetEncoded(false);
@@ -96,14 +113,15 @@ namespace commercio.sacco.lib
             //    throw argEx;
             //}
 
-            // Final assembly
-            byte[] r = _intToBytes(ecSignature.r);
-            byte[] s = _intToBytes(ecSignature.s);
-            byte[] z = new byte[r.Length + s.Length];
-            r.CopyTo(z, 0);
-            s.CopyTo(z, r.Length);
+            // RC 20201018 - Discarted against black magic above
+            //// Final assembly
+            //byte[] r = _intToBytes(ecSignature.r);
+            //byte[] s = _intToBytes(ecSignature.s);
+            //byte[] z = new byte[r.Length + s.Length];
+            //r.CopyTo(z, 0);
+            //s.CopyTo(z, r.Length);
 
-            return z;
+            //return z;
         }
 
 

@@ -83,7 +83,6 @@ namespace commercio.sacco.lib
             Dictionary<String, Object> sortedJson = MapSorter.sort(jsonSignature);
             // Encode the sorted JSON to a string
             String jsonData = JsonConvert.SerializeObject(sortedJson);
-             // Create a Sha256 of the message
             byte[] utf8Bytes = Encoding.UTF8.GetBytes(jsonData);
            
             // Sign the message
