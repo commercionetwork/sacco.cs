@@ -19,6 +19,8 @@ using System.Diagnostics;
 using NBitcoin;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.X9;
+using Org.BouncyCastle.Asn1.BC;
+using Org.BouncyCastle.Asn1.Sec;
 using Org.BouncyCastle.Math.EC;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Signers;
@@ -27,7 +29,6 @@ using Org.BouncyCastle.Crypto.Digests;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Security;
-//using Org.BouncyCastle.Crypto.Signers;
 using Newtonsoft.Json;
 
 namespace commercio.sacco.lib
@@ -237,7 +238,7 @@ namespace commercio.sacco.lib
 
         /// Generates a SecureRandom
         /// C# has not a fortuna random generator, Just trying an approach with DigestRandomGenerator from BouncyCastle
-        private static SecureRandom _getSecureRandom()
+        public static SecureRandom getSecureRandom()
         {
             // Start from a crypto seed from C# libraries
             System.Security.Cryptography.RNGCryptoServiceProvider rngCsp = new System.Security.Cryptography.RNGCryptoServiceProvider();
@@ -265,9 +266,9 @@ namespace commercio.sacco.lib
         /// *** Seems needed only by TxSigner, we keep it limited to this assembly 
         internal byte[] signTxData(byte[] data)
         {
+            // *** Create a Sha256 of the message - Method BouncyCastle            
             Sha256Digest sha256digest = new Sha256Digest();
             sha256digest.BlockUpdate(data, 0, data.Length);
-            // byte[] hash = new byte[SHA256DIGEST_OUT_LENGTH];
             byte[] hash = new byte[sha256digest.GetDigestSize()];
             sha256digest.DoFinal(hash, 0);
 
@@ -280,36 +281,18 @@ namespace commercio.sacco.lib
         public byte[] sign(byte[] data)
         {
             ECDsaSigner ecdsaSigner = new ECDsaSigner();
-            ecdsaSigner.Init(true, new ParametersWithRandom(ecPrivateKey, _getSecureRandom()));
+            ecdsaSigner.Init(true, new ParametersWithRandom(ecPrivateKey, getSecureRandom()));
             ECSignature ecSignatureWk = new ECSignature(ecdsaSigner.GenerateSignature(data));
             // RC 20200507 - Canonicalize signature (is this necessary?)
             ECSignature ecSignature = _toCanonicalised(ecSignatureWk);
             // RC 20200507 - Create the array in the new way - no more ASN1
             byte[] sigBytes = ecSignature.r.ToByteArray().Concat(ecSignature.s.ToByteArray()).ToArray();
+            // Black magic - by Marco Ruaro - 20201016
+            if (sigBytes.Length > 64)
+            {
+                sigBytes = sigBytes.Skip(1).ToArray();
+            }
             return (sigBytes);
-
-            //SecNamedCurves curve = SecNamedCurves.GetByName("secp256k1");
-            //var domain = new ECDomainParameters(curve.Curve, curve.G, curve.N, curve.H);
-            //ECPrivateKeyParameters keyParameters = new BC.Crypto.Parameters.ECPrivateKeyParameters(new BC.Math.BigInteger(ecPrivateKey), domain);
-
-            //ISigner signer = SignerUtilities.GetSigner("SHA-256withECDSA");
-            //// signer.Init(true, new ParametersWithRandom(ecPrivateKey, _getSecureRandom()));
-            //signer.Init(true, ecPrivateKey);
-            //signer.BlockUpdate(data, 0, data.Length);
-            //byte[] signature = signer.GenerateSignature();
-
-            //return signature;
-
-            /*
-            // Create the Asn1 DER sequence for the signature
-            // Quite different from Dart approach
-            Asn1EncodableVector asn1Vect = new Asn1EncodableVector();
-            asn1Vect.Add(new DerInteger(ecSignature.r));
-            asn1Vect.Add(new DerInteger(ecSignature.s));
-            DerSequence sequence = new DerSequence(asn1Vect);
-            return sequence.GetEncoded();
-            */
-
         }
 
         /// Converts the current [Wallet] instance into a JSON object.
